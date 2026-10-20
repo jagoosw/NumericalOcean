@@ -33,9 +33,12 @@ default_Δt(grid::ORCATPivotGRID) = is_orca_twelfth(grid) ? 6minutes : 20minutes
 
 # T and S at 7th order and the extra and biogeochemical tracers at 5th, as in OMIPSimulations. Every tracer is named,
 # because `ocean_simulation` gives any it is not told about an explicit `WENO(order = 5)`.
+# Next to land the reconstruction ends in first-order upwind (OMIPSimulations' `boundary_scheme = :upwind`) rather than
+# the default `Centered(order = 2)`, which grows spurious extrema in coastal corner and dead-end cells (e.g. S ≈ 43 and
+# PO₄ ≈ -2.3 mmol m⁻³ next to the Bosphorus).
 function tracer_advection_schemes(tracers, biogeochemistry, time_discretization)
-    temperature_salinity = WENO(; order = 7, time_discretization)
-    other = WENO(; order = 5, time_discretization)
+    temperature_salinity = WENO(; order = 7, time_discretization, boundary_scheme = UpwindBiased(order = 1))
+    other = WENO(; order = 5, time_discretization, boundary_scheme = UpwindBiased(order = 1))
     other_names = filter(name -> name ∉ (:T, :S), (something(tracers, ())..., required_biogeochemical_tracers(biogeochemistry)...))
     return merge((T = temperature_salinity, S = temperature_salinity),
                  NamedTuple(name => other for name in other_names))
