@@ -32,9 +32,28 @@ is_orca_quarter(grid::ORCATPivotGRID) = global_Nx(grid) == 1440
 is_orca_twelfth(grid) = false
 is_orca_twelfth(grid::ORCATPivotGRID) = global_Nx(grid) == 4320
 
-function ORCA1(arch; Nz = 70, Δz_top = 1.5, depth = 5500, Δzmax = nothing,
-                     immersed_bottom = GridFittedBottom, minimum_depth = 0)
+# eORCA1's narrowed straits, retuned so their transports approach observations. Each entry is matched to
+# the channel cell nearest (longitude, latitude); `width` (m) sets both of its faces (`Inf` removes the
+# narrowing) and `depth` (m) its bottom, and anything left out keeps the mesh/bathymetry files' value.
+# First-pass linear estimates from a 10-year mean of the spin-up with the files' geometry:
+#
+#   * Lombok: 0.50 Sv against 2.6 Sv (INSTANT). The files' 13 km by 166 m channel is shallower than the
+#     ~240 m sill in ETOPO 2022; at that depth the transport scales to 2.6 Sv at ~49 km.
+#   * Ombai: 0.54 Sv against 4.9 Sv (INSTANT), which would need more than a whole cell, so unnarrowed.
+#   * Gibraltar: two-layer exchange of 1.24 Sv against 0.80 Sv (Soto-Navarro et al. 2010), scaled from
+#     20 km; the exchange is hydraulically controlled, so it scales with width.
+#   * Dardanelles: exchange of 0.25 Sv against 0.033 Sv (Ünlüata et al. 1990), scaled from 10 km.
+#
+# Halmahera (126.5ᵒE, 129.5ᵒE) carries a closed ±1.1 Sv loop round the island, which a width cannot fix,
+# and the 119.5ᵒE strait's channel cell is land, so both keep the files' geometry.
+const ORCA1_STRAITS = (lombok      = (longitude = 115.5, latitude = -8.5, width = 49e3, depth = 240),
+                       ombai       = (longitude = 124.5, latitude = -8.5, width = Inf),
+                       gibraltar   = (longitude = -5.4,  latitude = 36.2, width = 13e3),
+                       dardanelles = (longitude = 26.9,  latitude = 40.3, width = 1.3e3))
 
+function ORCA1(arch; Nz = 70, Δz_top = 1.5, depth = 5500, Δzmax = nothing,
+                     immersed_bottom = GridFittedBottom, minimum_depth = 0,
+                     straits = ORCA1_STRAITS)
 
     z_faces = omip_vertical_discretization(Nz, depth; surface_grid_size = Δz_top,
                                                        maximum_grid_size = Δzmax)
@@ -48,6 +67,7 @@ function ORCA1(arch; Nz = 70, Δz_top = 1.5, depth = 5500, Δzmax = nothing,
                     immersed_bottom,
                     major_basins = 1,
                     minimum_depth,
+                    straits,
                     active_cells_map = true)
 
     return grid
