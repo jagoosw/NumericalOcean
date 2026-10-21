@@ -42,14 +42,18 @@ is_orca_twelfth(grid::ORCATPivotGRID) = global_Nx(grid) == 4320
 #   * Ombai: 0.54 Sv against 4.9 Sv (INSTANT), which would need more than a whole cell, so unnarrowed.
 #   * Gibraltar: two-layer exchange of 1.24 Sv against 0.80 Sv (Soto-Navarro et al. 2010), scaled from
 #     20 km; the exchange is hydraulically controlled, so it scales with width.
-#   * Dardanelles: exchange of 0.25 Sv against 0.033 Sv (Ünlüata et al. 1990), scaled from 10 km.
+#   * Dardanelles: exchange of 0.25 Sv against 0.033 Sv (Ünlüata et al. 1990) through the files' 10 km by 73 m
+#     channel. Narrowing it to the 1.3 km a linear scaling asks for NaNs within ~200 iterations (the explicit
+#     biharmonic viscosity at the velocity cell between the channel and the full cell beside it), so it keeps
+#     the 10 km and is made shallower instead: a two-layer exchange scales as width × depth^(3/2), giving
+#     73 m / 7.6^(2/3) ≈ 20 m.
 #
 # Halmahera (126.5ᵒE, 129.5ᵒE) carries a closed ±1.1 Sv loop round the island, which a width cannot fix,
 # and the 119.5ᵒE strait's channel cell is land, so both keep the files' geometry.
 const ORCA1_STRAITS = (lombok      = (longitude = 115.5, latitude = -8.5, width = 49e3, depth = 240),
                        ombai       = (longitude = 124.5, latitude = -8.5, width = Inf),
                        gibraltar   = (longitude = -5.4,  latitude = 36.2, width = 13e3),
-                       dardanelles = (longitude = 26.9,  latitude = 40.3, width = 1.3e3))
+                       dardanelles = (longitude = 26.9,  latitude = 40.3, depth = 20))
 
 function ORCA1(arch; Nz = 70, Δz_top = 1.5, depth = 5500, Δzmax = nothing,
                      immersed_bottom = GridFittedBottom, minimum_depth = 0,
