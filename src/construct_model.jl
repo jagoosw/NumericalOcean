@@ -79,11 +79,7 @@ function forced_ocean_simulation(grid;
                                                                              restoring_dir = restoring_dir[], 
                                                                              piston_velocity = 0.254,
                                                                              time_indexing = Cyclical(climatology_cycle)),
-                                 chlorophyll = FieldTimeSeries(Metadata(:chlorophyll; 
-                                                                        dataset = SeaWiFSMonthly(), 
-                                                                        dates = (DateTime(2000, 1, 1), DateTime(2000, 12, 1)), 
-                                                                        dir = restoring_dir[]), grid;
-                                                               time_indexing = Cyclical(climatology_cycle)),
+                                 chlorophyll = seawifs_chlorophyll_climatology(grid; climatology_cycle),
                                  radiative_forcing = TwoColorRadiation(grid; chlorophyll),
                                  momentum_advection = WENOVectorInvariant(; vorticity_order = grid isa ORCA1GRID ? 5 : 9,
                                                                             time_discretization = AdaptiveVerticallyImplicitDiscretization(cfl=0.5)),
