@@ -25,6 +25,8 @@ $(TYPEDSIGNATURES)
 Build a JRA55-forced ocean--sea-ice `Simulation` on `grid`,
 optionally carrying `biogeochemistry` with OAEMIP's initial conditions, rivers and iron dust.
 Extra passive `tracers` are added to `(:T, :S)`.
+`boundary_conditions` are passed to `ocean_simulation`, which merges them side by side with its defaults; an
+`immersed` condition for `u` or `v` replaces the default one whole, so it must carry the bottom drag too.
 
 Model time zero is `start_date`. The JRA55 forcing cycles every `forcing_cycle` seconds (see [`forcing_period`](@ref):
 21915 days for 1958--2018, 365 for repeat-year forcing) and the climatologies (WOA salinity, SeaWiFS chlorophyll,
@@ -86,6 +88,7 @@ function forced_ocean_simulation(grid;
                                  biogeochemistry = nothing,
                                  tracers = nothing,
                                  forcing = NamedTuple(),
+                                 boundary_conditions = NamedTuple(),
                                  river_tracers = filter(tracer -> haskey(DEFAULT_RIVER_INPUTS, replicated_tracer(tracer)), required_biogeochemical_tracers(biogeochemistry)),
                                  river_fluxes = isempty(river_tracers) ? NamedTuple() :
                                                 RivR2OSurfaceFlux(grid; forced_tracers = river_tracers, climatology = true, start_year = 1985, end_year = 1995, land),
@@ -106,6 +109,7 @@ function forced_ocean_simulation(grid;
                                                           closure = filter(!isnothing, closures),
                                                           river_routing = land.river_routing,
                                                           biogeochemistry,
+                                                          boundary_conditions,
                                                           forcing = merge(forcing, dust_deposition)),
 
                                  sea_ice_immersed_latitudes = (-50, 35),
