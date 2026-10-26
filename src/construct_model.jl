@@ -62,7 +62,7 @@ function forced_ocean_simulation(grid;
                                                             maximum_spread_cells = default_river_spread_cells(grid)),
 
                                  eddy_closure = grid isa ORCA1GRID ? TriadIsopycnalSkewSymmetricDiffusivity(VerticallyImplicitTimeDiscretization();
-                                                                                                            κ_skew = 800, κ_symmetric = 800, 
+                                                                                                            κ_skew = 800, κ_symmetric = 1200, 
                                                                                                             slope_limiter = FluxTapering(1e-2))
                                                                    : nothing,
                                  background_diffusivity = VerticalScalarDiffusivity(κ = henyey_diffusivity_field(grid), ν = 3e-5),
