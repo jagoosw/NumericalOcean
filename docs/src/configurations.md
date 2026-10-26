@@ -1,7 +1,9 @@
 # Spun-up configurations
 
-## NumericalOcean1-JRA55_v0.1.0
-As built by `forced_ocean_simulation(ORCA1(GPU()))` with default arguments.
+## NumericalOcean1-JRA55_v0.2.0
+As built by `forced_ocean_simulation(ORCA1(GPU()))` with default arguments. It differs from `NumericalOcean1-JRA55_v0.1.0`
+(the defaults at the `v0.1.0` tag) in, among other things, the Redi diffusivity (1200 m² s⁻¹, was 800), the chlorophyll
+(the 1998–2010 SeaWiFS monthly climatology, was the year 2000) and the narrowed straits retuned towards observed transports.
 
 | | |
 |---|---|

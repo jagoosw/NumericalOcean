@@ -1,6 +1,6 @@
 name = "NumericalOcean"
 uuid = "284f8994-2080-4568-8d66-4adea85bd4b3"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jago <jagostrongwright@gmail.com>"]
 
 [deps]
