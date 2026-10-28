@@ -6,7 +6,7 @@ using Oceananigans.Units: days
 using NumericalEarth.EarthSystemModels: EarthSystemModel, components
 using NumericalEarth.DataWrangling: Metadata, native_times, all_dates, compute_native_date_range
 
-const OMIP_RESTART_DIR = Ref(on_bouchet ? "/nfs/roberts/pi/pi_ey239/js5256/NumericalOceanSpinups/NumericalOcean1-JRA55_v0.1.0" : "data/spinups")
+const OMIP_RESTART_DIR = Ref(on_bouchet ? "/nfs/roberts/pi/pi_ey239/js5256/NumericalOceanSpinups/NumericalOcean1-JRA55_v0.2.0" : "data/spinups")
 
 #####
 ##### Finding the checkpoint for a date

@@ -1,6 +1,6 @@
 # # Spinning up the ``1\degree`` configuration
 #
-# This example builds the `NumericalOcean1-JRA55_v0.1.0` spin-up (see [Spun-up configurations](@ref)): the
+# This example builds the `NumericalOcean1-JRA55_v0.2.0` spin-up (see [Spun-up configurations](@ref)): the
 # default ocean--sea ice configuration on eORCA1, run from rest through 5 cycles of 1958--2018 JRA55 forcing
 # (5 × 21915 days, about 300 years). At around 140 simulated years per day on an H100 this takes a little over
 # two days, so it is not run when the documentation is built.

@@ -1,7 +1,7 @@
 # River iron content and the separate-transition override for NutrientsPlanktonDetritus
 
 using NumericalEarth.Oceans: RiverConcentration, default_freshwater_tracer_content
-using Oceananigans.Biogeochemistry: separate_transition_tracers, required_biogeochemical_tracers
+using Oceananigans.Biogeochemistry: separate_tracer_transitions, required_biogeochemical_tracers
 using Oceananigans.Fields: ZeroField
 
 @testset "default_freshwater_tracer_content" begin
@@ -19,11 +19,11 @@ using Oceananigans.Fields: ZeroField
     @test default_freshwater_tracer_content(Val(:Fe), nothing) isa ZeroField
 end
 
-@testset "separate_transition_tracers" begin
+@testset "separate_tracer_transitions" begin
     grid = RectilinearGrid(size = (2, 2, 2), extent = (1, 1, 1))
     for bgc in (MITgcmDIC(grid), LOBSTER(grid), NPZD(grid), ImplicitBiology(grid))
         @test bgc isa OceanBioME.DiscreteBiogeochemistry{<:NutrientsPlanktonDetritus}
-        @test separate_transition_tracers(bgc) == required_biogeochemical_tracers(bgc)
+        @test separate_tracer_transitions(bgc) == required_biogeochemical_tracers(bgc)
     end
-    @test separate_transition_tracers(nothing) == ()
+    @test separate_tracer_transitions(nothing) == ()
 end
