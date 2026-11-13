@@ -25,6 +25,10 @@ $(TYPEDSIGNATURES)
 Build a JRA55-forced ocean--sea-ice `Simulation` on `grid`,
 optionally carrying `biogeochemistry` with OAEMIP's initial conditions, rivers and iron dust.
 Extra passive `tracers` are added to `(:T, :S)`.
+`boundary_conditions` are passed to `ocean_simulation`, which merges them side by side with its defaults; an
+`immersed` condition for `u` or `v` replaces the default one whole, so it must carry the bottom drag too. A `coriolis`
+replaces `ocean_simulation`'s default (`nothing` keeps it), e.g. `HydrostaticSphericalCoriolis(scheme =
+ConsistentAreaEnstrophyConserving())` with `ORCA1(arch; immersed_bottom = PartialCellBottom)`.
 
 Model time zero is `start_date`. The JRA55 forcing cycles every `forcing_cycle` seconds (see [`forcing_period`](@ref):
 21915 days for 1958--2018, 365 for repeat-year forcing) and the climatologies (WOA salinity, SeaWiFS chlorophyll,
@@ -60,7 +64,7 @@ function forced_ocean_simulation(grid;
                                                             maximum_spread_cells = default_river_spread_cells(grid)),
 
                                  eddy_closure = grid isa ORCA1GRID ? TriadIsopycnalSkewSymmetricDiffusivity(VerticallyImplicitTimeDiscretization();
-                                                                                                            κ_skew = 800, κ_symmetric = 800, 
+                                                                                                            κ_skew = 800, κ_symmetric = 1200, 
                                                                                                             slope_limiter = FluxTapering(1e-2))
                                                                    : nothing,
                                  background_diffusivity = VerticalScalarDiffusivity(κ = henyey_diffusivity_field(grid), ν = 3e-5),
@@ -79,17 +83,15 @@ function forced_ocean_simulation(grid;
                                                                              restoring_dir = restoring_dir[], 
                                                                              piston_velocity = 0.254,
                                                                              time_indexing = Cyclical(climatology_cycle)),
-                                 chlorophyll = FieldTimeSeries(Metadata(:chlorophyll; 
-                                                                        dataset = SeaWiFSMonthly(), 
-                                                                        dates = (DateTime(2000, 1, 1), DateTime(2000, 12, 1)), 
-                                                                        dir = restoring_dir[]), grid;
-                                                               time_indexing = Cyclical(climatology_cycle)),
+                                 chlorophyll = seawifs_chlorophyll_climatology(grid; climatology_cycle),
                                  radiative_forcing = TwoColorRadiation(grid; chlorophyll),
                                  momentum_advection = WENOVectorInvariant(; vorticity_order = grid isa ORCA1GRID ? 5 : 9,
                                                                             time_discretization = AdaptiveVerticallyImplicitDiscretization(cfl=0.5)),
                                  biogeochemistry = nothing,
                                  tracers = nothing,
                                  forcing = NamedTuple(),
+                                 boundary_conditions = NamedTuple(),
+                                 coriolis = nothing,
                                  river_tracers = filter(tracer -> haskey(DEFAULT_RIVER_INPUTS, replicated_tracer(tracer)), required_biogeochemical_tracers(biogeochemistry)),
                                  river_fluxes = isempty(river_tracers) ? NamedTuple() :
                                                 RivR2OSurfaceFlux(grid; forced_tracers = river_tracers, climatology = true, start_year = 1985, end_year = 1995, land),
@@ -110,6 +112,8 @@ function forced_ocean_simulation(grid;
                                                           closure = filter(!isnothing, closures),
                                                           river_routing = land.river_routing,
                                                           biogeochemistry,
+                                                          boundary_conditions,
+                                                          (isnothing(coriolis) ? NamedTuple() : (; coriolis))...,
                                                           forcing = merge(forcing, dust_deposition)),
 
                                  sea_ice_immersed_latitudes = (-50, 35),

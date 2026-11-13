@@ -187,13 +187,13 @@ end
 
     # a cache file is written
     @test any(startswith("mapped_4_4_1985_1987"), readdir(full_dir))
-    @test isfile(joinpath(full_dir, "mapped_4_4_1985_1987_v5.jld2"))
+    @test isfile(joinpath(full_dir, "mapped_4_4_1985_1987_v6.jld2"))
 
     clim, clim_times, _, _ = GO.river_load_data(RIVER_LL_GRID; forced_tracers = (:Alk,), climatology = true, kw...)
     @test isnothing(clim_times)
     @test clim.Alk isa AbstractVector
     @test length(clim.Alk) == 4
-    @test isfile(joinpath(full_dir, "mapped_4_4_1985_1987_climatology_v5.jld2"))
+    @test isfile(joinpath(full_dir, "mapped_4_4_1985_1987_climatology_v6.jld2"))
     @test clim.Alk ≈ 2 .* [1, 10, 100, 1000] .* Alk_scale # mean over 1985-1987 (see above)
 
     # load_cache = true round-trips through the JLD2 cache

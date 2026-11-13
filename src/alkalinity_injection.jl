@@ -1,6 +1,6 @@
 # Alkalinity releases (from OAEMIP's src/alkalinity_injection.jl). Both forms give identical results: the first
 # stores the release pattern in a field (more memory, less computation), the second recomputes it every evaluation.
-using CUDA: @allowscalar
+using GPUArraysCore: @allowscalar
 using KernelAbstractions: @kernel, @index
 using Oceananigans.AbstractOperations: Integral
 using Oceananigans.Grids: λnode, φnode

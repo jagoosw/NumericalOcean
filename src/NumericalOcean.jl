@@ -5,6 +5,7 @@ export auto_config_directories!,
        forced_ocean_simulation,
        MaunaLoaCO₂,
        PrescribedChlorophyllAttenuation,
+       seawifs_chlorophyll_climatology,
        GaussianInjection, GaussianInjectionLowMemory,
        omip_diagnostics!, oaemip_diagnostics!, checkpointer!,
        add_output_writer!, flush_output!,
@@ -29,6 +30,7 @@ include("grids.jl")
 include("defaults.jl")
 include("unified_bgc.jl")
 include("river_input.jl")
+include("chlorophyll_climatology.jl")
 include("interpolated_iron_dust.jl")
 include("biogeochemistry.jl")
 include("light_attenuation.jl")

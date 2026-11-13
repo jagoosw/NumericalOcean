@@ -1,6 +1,7 @@
 using NumericalOcean
 using Dates
 using Downloads: Downloads
+using Oceananigans: CPU
 
 using NumericalEarth.DataWrangling: Metadata, Metadatum, WOAAnnual, WOAMonthly, ECCO4Monthly
 using NumericalEarth.DataWrangling.JRA55: RepeatYearJRA55, MultiYearJRA55
@@ -13,7 +14,7 @@ ENV["DATADEPS_ALWAYS_ACCEPT"] = "true"
 forcing_dir       = NumericalOcean.forcing_dir[]
 climatology       = NumericalOcean.restoring_dir[]
 sea_ice_date      = DateTime(1993, 1, 1)
-chlorophyll_dates = (DateTime(2000, 1, 1), DateTime(2000, 12, 1))
+chlorophyll_dates = (DateTime(1998, 1, 1), DateTime(2010, 12, 1)) # the whole years of SeaWiFS, for its climatology
 
 jra55 = MultiYearJRA55()
 jra55_variables = (:eastward_velocity, :northward_velocity, :temperature, :specific_humidity,
@@ -44,5 +45,8 @@ Downloads.download(Metadata(:chlorophyll; dataset = SeaWiFSMonthly(), dates = ch
 @info "ORCA eORCA1 mesh + bathymetry"
 Downloads.download(Metadatum(:mesh_mask;     dataset = ORCAOne()))
 Downloads.download(Metadatum(:bottom_height; dataset = ORCAOne()))
+
+@info "SeaWiFS chlorophyll climatology on ORCA1 (cached in the climatology directory)"
+seawifs_chlorophyll_climatology(ORCA1(CPU()))
 
 @info "done"

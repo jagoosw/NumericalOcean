@@ -61,19 +61,17 @@ function read_file(file_path)
     ds = NCDataset(file_path)
     lon = Array(ds["lon"])
     lat = Array(ds["lat"])
-    DIC = Array(ds["DIC"])
-    DIC[ismissing.(DIC)] .= zero(eltype(lon))
+    variables = tuple([v for v in keys(ds) if ndims(ds[v]) == 2]...)
+    FT = eltype(lon)
 
-    idx = findall(!iszero, DIC)
+    # mouths are the cells where any load is nonzero: RivR2O puts DIP on cells without DIC (37 % of it, e.g. a
+    # second Amazon cell holding more DIP than the Amazon's DIC mouth), which a DIC-only mask drops
+    loads = map(name -> coalesce.(ds[name][:, :], zero(FT)), variables)
+    idx = findall(.|(map(load -> .!iszero.(load), loads)...))
     mouth_lon = lon[getindex.(idx, 1)]
     mouth_lat = lat[getindex.(idx, 2)]
 
-    variables = tuple([v for v in keys(ds) if ndims(ds[v]) == 2]...)
-
-    data = NamedTuple{Symbol.(variables)}(
-        map(name -> convert.(eltype(lon), ds[name][idx]),
-            variables)
-    )
+    data = NamedTuple{Symbol.(variables)}(map(load -> convert.(FT, load[idx]), loads))
 
     return data, mouth_lon, mouth_lat, idx
 end
@@ -182,7 +180,7 @@ function river_load_data(grid;
 
     # only plain CPU arrays are cached - JLD2 can't reliably round trip `RiverLoad`/`Forcing`/`Field`/GPU arrays
     # (it silently returns reconstructed types which then fail to compile in kernels)
-    save_name = joinpath(full_dir, "mapped_$(grid_name(grid))_$(start_year)_$(end_year)$(climatology_suffix)_v5.jld2")
+    save_name = joinpath(full_dir, "mapped_$(grid_name(grid))_$(start_year)_$(end_year)$(climatology_suffix)_v6.jld2")
 
     if isfile(save_name) & load_cache
         return jldopen(save_name) do f

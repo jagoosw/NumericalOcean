@@ -8,5 +8,5 @@ default_freshwater_tracer_content(::Val{:Fe}, ::DiscreteBiogeochemistry) =
     RiverConcentration(convert(Oceananigans.defaults.FloatType, 0.01))
 
 # Compute every NutrientsPlanktonDetritus transition in its own kernel rather than inline in the tracer tendency
-Oceananigans.Biogeochemistry.separate_transition_tracers(bgc::DiscreteBiogeochemistry{<:NutrientsPlanktonDetritus}) =
+Oceananigans.Biogeochemistry.separate_tracer_transitions(bgc::DiscreteBiogeochemistry{<:NutrientsPlanktonDetritus}) =
     Oceananigans.Biogeochemistry.required_biogeochemical_tracers(bgc)
