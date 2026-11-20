@@ -203,7 +203,7 @@ carbonate_replicates(::AbstractInorganicCarbon{N}) where N =
 
 suffixed(names, suffix) = map(name -> Symbol(name, suffix), names)
 
-function carbonate_replicate_diagnostics(replicate, ocean, interface)
+function carbonate_replicate_diagnostics(replicate, ocean, interface, chemistry_fields)
     (; DIC, Alk, suffix) = replicate
 
     water_concentration = interface[DIC].water_concentration
@@ -213,7 +213,7 @@ function carbonate_replicate_diagnostics(replicate, ocean, interface)
     DIC_field = ocean.tracers[DIC]
     Alk_field = ocean.tracers[Alk]
 
-    pH, fCO₂ = surface_carbon_chemistry_diagnostics(stored_pH, ocean.grid, cc, DIC_field, Alk_field, fields(ocean))
+    pH, fCO₂ = surface_carbon_chemistry_diagnostics(stored_pH, ocean.grid, cc, DIC_field, Alk_field, chemistry_fields)
 
     surface_carbon_flux = DIC_field.boundary_conditions.top.condition.func.flux_field
 
@@ -258,13 +258,17 @@ function oaemip_diagnostics!(simulation;
     interface = simulation.model.interfaces.properties
     inorganic_carbon = biogeochemistry.underlying_biogeochemistry.inorganic_carbon
 
-    carbonate_diagnostics = map(r -> carbonate_replicate_diagnostics(r, ocean, interface), carbonate_replicates(inorganic_carbon))
+    # the potential temperature and practical salinity the gas exchange is computed with
+    chemistry_fields = merge(fields(ocean), (T = simulation.model.interfaces.exchanger.ocean.state.T,
+                                             S = interface.gas_exchange_state.practical_salinity))
+
+    carbonate_diagnostics = map(r -> carbonate_replicate_diagnostics(r, ocean, interface, chemistry_fields), carbonate_replicates(inorganic_carbon))
 
     carbonate_surface   = mapreduce(first, merge, carbonate_diagnostics)
     carbonate_integrals = mapreduce(last,  merge, carbonate_diagnostics)
 
     oc = interface.O₂.air_concentration
-    O₂_sat = KernelFunctionOperation{Center, Center, Center}(oxygen_saturation_diagnostic, grid, oc, ocean.clock, fields(ocean))
+    O₂_sat = KernelFunctionOperation{Center, Center, Center}(oxygen_saturation_diagnostic, grid, oc, ocean.clock, chemistry_fields)
 
     productivity_args = (biogeochemistry.underlying_biogeochemistry.plankton,
                          biogeochemistry.underlying_biogeochemistry,
